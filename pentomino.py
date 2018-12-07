@@ -85,7 +85,7 @@ les solutions symmétriques.
           #     21
 """
 
-[m,n] = [int(x) for x in sys.argv[1].split("x")]
+[M,N] = [int(x) for x in sys.argv[1].split("x")]
 
 F = [[0,1,1], [1,1,0], [0,1,0]]
 
@@ -94,7 +94,7 @@ def cell(i,j):
     """
     Renvoie la variable correspondant à la case i, j dans le tableau
     """
-    return i * n + j
+    return i * N + j
 
 def possibles(forme):
     """
@@ -114,8 +114,8 @@ def possibles(forme):
             if forme[i][j]:
                 cases.append([i,j])
 
-    for i in range(m - rows +1):
-        for j in range(n-cols +1):
+    for i in range(M - rows +1):
+        for j in range(N-cols +1):
             uplets.add(frozenset(map(lambda x:cell(x[0]+i,x[1]+j), cases)))
 
     return uplets
@@ -141,12 +141,12 @@ FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
 FORM = {}
 FORM["F"] = possibles(F)
 
-var = {}
+VAR = {}
 
-for k in range(m*n):
-    var[k]=set(FREE_PENTOMINOS)
+for k in range(M*N):
+    VAR[k]=set(FREE_PENTOMINOS)
 
-P = constraint_program(var)
+P = constraint_program(VAR)
 
 """
 for f in FORMES:
@@ -246,7 +246,7 @@ for shape_name, shape_set in all_shapes.items():
 
 def main(argv=[]):
     try:
-        if n*m != 60:
+        if N*M != 60:
             print("invalid size")
         print(FORM)
 
