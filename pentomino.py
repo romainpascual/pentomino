@@ -85,8 +85,6 @@ les solutions symmétriques.
           #     21
 """
 
-
-
 [m,n] = [int(x) for x in sys.argv[1].split("x")]
 
 F = [[0,1,1], [1,1,0], [0,1,0]]
@@ -123,8 +121,6 @@ def possibles(forme):
     return uplets
 
 
-
-
 shapes = {
     'F': [[1, 2], [2], [1, 1]],
     'I': [[5]],
@@ -141,23 +137,9 @@ shapes = {
 }
 # formes possibles
 FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
-FORMES = {  "F": 8,
-            "I": 2,
-            "L": 8,
-            "N": 8,
-            "P": 8,
-            "T": 4,
-            "U": 4,
-            "V": 4,
-            "W": 4,
-            "X": 1,
-            "Y": 4,
-            "Z": 4,
-             }
 
 FORM = {}
 FORM["F"] = possibles(F)
-
 
 var = {}
 
@@ -184,7 +166,6 @@ def print_shape(shape):
                 printstring += ' '*number
         printstring += '\n'
     print(printstring[:-1])
-
 
 
 def repr_to_mat(shape):
@@ -245,6 +226,23 @@ def get_all_shapes(shape_matrix):
 
 all_shapes = dict()
 
+for shape_name, shape in shapes.items():
+    shape_matrix = repr_to_mat(shape[:])
+    shape_set = set()
+    for modified_shape in get_all_shapes(shape_matrix):
+        shape_set.add(frozenset(modified_shape))
+    all_shapes[shape_name] = list(map(list, [map(list, line) for line in shape_set]))
+
+"""
+for shape_name, shape_set in all_shapes.items():
+    print('-'*18)
+    print("{} a {} alternatives.".format(shape_name, len(shape_set)))
+    print(shape_name, ':')
+    for shape_matrix in shape_set:
+        # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in shape_matrix]))
+        #print_shape(mat_to_repr(shape_matrix))
+        #print('-'*12)
+"""
 
 def main(argv=[]):
     try:
@@ -255,21 +253,8 @@ def main(argv=[]):
     except Exception as e:
         print("exception ",e)
 
-    for shape_name, shape in shapes.items():
-        shape_matrix = repr_to_mat(shape[:])
-        shape_set = set()
-        for modified_shape in get_all_shapes(shape_matrix):
-            shape_set.add(frozenset(modified_shape))
-        all_shapes[shape_name] = list(map(list, [map(list, line) for line in shape_set]))
+    print(all_shapes)
+    
 
-
-    for shape_name, shape_set in all_shapes.items():
-        print('-'*18)
-        print("{} a {} alternatives.".format(shape_name, len(shape_set)))
-        print(shape_name, ':')
-        for shape_matrix in shape_set:
-            # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in shape_matrix]))
-            print_shape(mat_to_repr(shape_matrix))
-            print('-'*12)
-
-
+if __name__ == "__main__":
+    main(sys.argv)
