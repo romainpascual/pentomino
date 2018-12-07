@@ -75,14 +75,20 @@ les solutions symmétriques.
         ###
          #
 
+    Y:  #
+        ##
+        #
+        #
+
     Z:  #
         ###
           #
 """
 
+
+
 [m,n] = [int(x) for x in sys.argv[1].split("x")]
 
-F = [[1,2],[2],[1,1]]
 F = [[0,1,1], [1,1,0], [0,1,0]]
 
 
@@ -100,7 +106,7 @@ def possibles(forme):
     F = [[0,1,1], [1,1,0], [0,1,0]]
     """
 
-    uplets = []    
+    uplets = set()
     rows,cols = len(forme), len(forme[0])
 
     cases = []
@@ -112,27 +118,44 @@ def possibles(forme):
 
     for i in range(m - rows +1):
         for j in range(n-cols +1):
-            uplets.append(set(map(lambda x:cell(x[0]+i,x[1]+j), cases)))
+            uplets.add(frozenset(map(lambda x:cell(x[0]+i,x[1]+j), cases)))
     
     return uplets
             
 
 
 # formes possibles
-rotation = { "F": [k for k in range(8)],
-             "I": [k for k in range(8,10)],
-             "L": [k for k in range(10,18)],
-             "N": [k for k in range(18,26)],
-             "P": [k for k in range(26,34)],
-             "T": [k for k in range(34,38)],
-             "U": [k for k in range(38,42)],
-             "V": [k for k in range(42,46)],
-             "W": [k for k in range(46,50)],
-             "X": [50],
-             "Y": [k for k in range(51,59)],
-             "Z": [k for k in range(59,63)],
+FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
+FORMES = {  "F": 8,
+            "I": 2,
+            "L": 8,
+            "N": 8,
+            "P": 8,
+            "T": 4,
+            "U": 4,
+            "V": 4,
+            "W": 4,
+            "X": 1,
+            "Y": 4,
+            "Z": 4,
              }
 
+FORM = {}
+FORM["F"] = possibles(F)
+
+
+var = {}
+
+for k in range(m*n):
+    var[k]=set(FREE_PENTOMINOS)
+
+P = constraint_program(var)
+
+"""
+for f in FORMES:
+    for k in range(m*n):
+        P.add_constraint(f,k {f,v) for}
+"""
 
 def main(argv=[]):
     try:
@@ -140,7 +163,7 @@ def main(argv=[]):
         if n*m != 60:
             print("invalid size")
         
-        print(possibles(F))
+        print(FORM)
         
     except:
         print("exception")
