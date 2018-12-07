@@ -135,10 +135,11 @@ shapes = {
     'Y': [[1], [2], [1], [1]],
     'Z': [[1], [3], [2, 1]]
 }
+
 # formes possibles
 FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
 
-FORM = {}
+FORM = dict()
 FORM["F"] = possibles(F)
 
 VAR = {}
@@ -168,10 +169,12 @@ def print_shape(shape):
     print(printstring[:-1])
 
 
-def repr_to_mat(shape):
+
+def compactmat_to_mat(shape):
     shape_matrix = []
     max_length = 0
     for line_count, line in enumerate(shape):
+        line = line[:]
         shape_matrix.append([])
         while line:
             if len(line)%2 == 1:
@@ -189,24 +192,7 @@ def repr_to_mat(shape):
     # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in shape_matrix]))
     # print('-'*12)
 
-def mat_to_repr(shape_matrix):
-    repr = []
-    for line_count, line in enumerate(shape_matrix):
-        repr.append([])
-        while line[-1] == 0:
-            line.pop()
-        last_char = line[0]
-        count = 0
-        while line:
-            current_char = line.pop(0)
-            if current_char != last_char:
-                repr[line_count].append(current_char*count)
-                last_char = current_char
-                count = 0
-            count+=1
-        if current_char == 1:
-            repr[line_count].append(current_char * count)
-    return repr
+
 
 
 def get_all_shapes(shape_matrix):
@@ -223,38 +209,59 @@ def get_all_shapes(shape_matrix):
 # for forme in shapes:
 #     repr_to_mat(forme[:])
 
+def mat_to_compactmat(shape_matrix):
 
-all_shapes = dict()
-
-for shape_name, shape in shapes.items():
-    shape_matrix = repr_to_mat(shape[:])
-    shape_set = set()
-    for modified_shape in get_all_shapes(shape_matrix):
-        shape_set.add(frozenset(modified_shape))
-    all_shapes[shape_name] = list(map(list, [map(list, line) for line in shape_set]))
-
-"""
-for shape_name, shape_set in all_shapes.items():
-    print('-'*18)
-    print("{} a {} alternatives.".format(shape_name, len(shape_set)))
-    print(shape_name, ':')
-    for shape_matrix in shape_set:
-        # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in shape_matrix]))
-        #print_shape(mat_to_repr(shape_matrix))
-        #print('-'*12)
-"""
+    compactmat = []
+    for line_count, line in enumerate(shape_matrix[:]):
+        line = line[:]
+        compactmat.append([])
+        while line[-1] == 0:
+            line.pop()
+        last_char = line[0]
+        count = 0
+        while line:
+            current_char = line.pop(0)
+            if current_char != last_char:
+                compactmat[line_count].append(current_char * count)
+                last_char = current_char
+                count = 0
+            count+=1
+        if current_char == 1:
+            compactmat[line_count].append(current_char * count)
+    return compactmat
 
 def main(argv=[]):
+    all_shapes = dict()
+
     try:
-        if N*M != 60:
+        if n*m != 60:
             print("invalid size")
         print(FORM)
 
     except Exception as e:
         print("exception ",e)
 
-    print(all_shapes)
-    
+    for shape_name, shape in shapes.items():
+        shape_matrix = compactmat_to_mat(shape[:])
+        shape_set = set()
+        for modified_shape in get_all_shapes(shape_matrix[:]):
+            # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in modified_shape]))
+            shape_set.add(tuple(modified_shape))
+        all_shapes[shape_name] = list(map(list, [map(list, line) for line in shape_set]))
 
-if __name__ == "__main__":
-    main(sys.argv)
+    # for shape_name, shape_set in all_shapes.items():
+    #     print('-'*18)
+    #     print("{} a {} alternatives.".format(shape_name, len(shape_set)))
+    #     print(shape_name, ':')
+    #     for shape_matrix in shape_set:
+    #         # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in shape_matrix]))
+    #         print_shape(mat_to_compactmat(shape_matrix[:]))
+    #         print('-'*12)
+
+    print('-'*8)
+    # print(all_shapes)
+
+
+if __name__ == '__main__':
+    main()
+
