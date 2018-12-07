@@ -234,7 +234,7 @@ def main(argv=[]):
     all_shapes = dict()
 
     try:
-        if n*m != 60:
+        if N*M != 60:
             print("invalid size")
         print(FORM)
 
@@ -261,6 +261,22 @@ def main(argv=[]):
     print('-'*8)
     # print(all_shapes)
 
+    for forme in all_shapes:
+        free_shapes = all_shapes[forme]
+        l = []
+        for fs in free_shapes:
+            l += possibles(fs)
+        FORM[forme] = set(l)
+
+    r = 1
+    for f in FORM:
+        print(f)
+        print()
+        r *= len(FORM[f])
+        print(len(FORM[f]))
+        print('-'*8)
+        print()
+    print(len(str(r)))
 
 if __name__ == '__main__':
     main()
