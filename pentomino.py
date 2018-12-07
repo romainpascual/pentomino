@@ -268,15 +268,40 @@ def main(argv=[]):
             l += possibles(fs)
         FORM[forme] = set(l)
 
-    r = 1
-    for f in FORM:
-        print(f)
-        print()
-        r *= len(FORM[f])
-        print(len(FORM[f]))
-        print('-'*8)
-        print()
-    print(len(str(r)))
+    # r = 1
+    # for f in FORM:
+    #     print(f, '\n')
+    #     r *= len(FORM[f])
+    #     print(len(FORM[f]))
+    #     print('-'*8)
+    #     print()
+    # print(len(str(r)))
+
+    pos_2_shape = dict()
+    for shape, quintuplets in FORM.items():
+        for quintuplet in quintuplets:
+            pos_2_shape[tuple(quintuplet)] = {shape, 'NoForm'}
+
+    for k in range(M * N):
+        VAR[k] = set(FREE_PENTOMINOS)
+
+    VAR.update(pos_2_shape)
+    print(VAR)
+
+    P = constraint_program(VAR)
+
+    for quintuplet, shape in pos_2_shape.items():
+        shape = shape.copy()
+        shape.remove('NoForm')
+        shape = shape.pop()
+        # print('#'*12, shape)
+        for i in quintuplet:
+            CELL_IN_SHAPE_CONSTRAINT = {(shape, shape)}
+            P.add_constraint(i, quintuplet, CELL_IN_SHAPE_CONSTRAINT)
+
+    print('Solving...')
+    sol = P.solve()
+    print(sol)
 
 if __name__ == '__main__':
     main()
