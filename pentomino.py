@@ -117,8 +117,7 @@ def possibles(forme):
     for i in range(M - rows +1):
         for j in range(N-cols +1):
             uplets.add(frozenset(map(lambda x:cell(x[0]+i,x[1]+j), cases)))
-
-    return uplets
+    return set(map(tuple, map(sorted, map(tuple, uplets))))
 
 
 shapes = {
@@ -236,7 +235,7 @@ def main(argv=[]):
     try:
         if N*M != 60:
             print("invalid size")
-        print(FORM)
+        # print(FORM)
 
     except Exception as e:
         print("exception ",e)
@@ -268,41 +267,44 @@ def main(argv=[]):
             l += possibles(fs)
         FORM[forme] = set(l)
 
-    # r = 1
-    # for f in FORM:
-    #     print(f, '\n')
-    #     r *= len(FORM[f])
-    #     print(len(FORM[f]))
-    #     print('-'*8)
-    #     print()
-    # print(len(str(r)))
+    VAR_FORM = dict()
+    for cell in range(N*M):
+        VAR_FORM[cell] = set()
 
-    pos_2_shape = dict()
+
     for shape, quintuplets in FORM.items():
         for quintuplet in quintuplets:
-            pos_2_shape[tuple(quintuplet)] = {shape, 'NoForm'}
+            for cell in quintuplet:
+                VAR_FORM[cell].update({shape})
 
-    for k in range(M * N):
-        VAR[k] = set(FREE_PENTOMINOS)
 
-    VAR.update(pos_2_shape)
-    print(VAR)
+    P = constraint_program({**VAR_FORM, **FORM})
+    P.set_arc_consistency()
 
-    P = constraint_program(VAR)
 
-    for quintuplet, shape in pos_2_shape.items():
-        shape = shape.copy()
-        shape.remove('NoForm')
-        shape = shape.pop()
-        # print('#'*12, shape)
-        for i in quintuplet:
-            CELL_IN_SHAPE_CONSTRAINT = {(shape, shape)}
-            P.add_constraint(i, quintuplet, CELL_IN_SHAPE_CONSTRAINT)
+    for cell in range(N*M):
+        for shape, quintuplets in FORM.items():
+            setquint = set()
+            for quintuplet in quintuplets:
+                if cell in quintuplet and shape in VAR_FORM[cell]:
+                    setquint.add((shape, quintuplet))
+
+            for othershape in VAR_FORM[cell]:
+                for otherquintuplet in quintuplets:
+                    if othershape != shape and cell not in otherquintuplet:
+                        setquint.add((othershape, otherquintuplet))
+            if setquint:
+                    # print(cell, shape, setquint)
+                    P.add_constraint(cell, shape, setquint)
 
     print('Solving...')
-    sol = P.solve()
-    print(sol)
-
+    sys.setrecursionlimit(10000)
+    count = 0
+    for sol in P.solve_all():
+        print(sol)
+        count += 1
+    print('Solved.')
+    print('Final count: ', count)
 if __name__ == '__main__':
     main()
 
