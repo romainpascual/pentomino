@@ -6,6 +6,41 @@ from constraint_programming import constraint_program
 import time
 import copy
 
+try:
+    import colorama
+    from colorama import Fore, Back, Style
+    colorama.init(autoreset=True)
+
+    COLOR = {'X': Style.RESET_ALL + Back.CYAN + Fore.BLACK + 'X',
+             'L': Style.RESET_ALL + Back.LIGHTYELLOW_EX + Fore.BLACK + 'L',
+             'V': Style.RESET_ALL + Back.LIGHTMAGENTA_EX + Fore.BLACK + 'V',
+             'I': Style.RESET_ALL + Back.MAGENTA + 'I',
+             'N': Style.RESET_ALL + Back.LIGHTBLUE_EX + 'N',
+             'P': Style.RESET_ALL + Back.LIGHTGREEN_EX + Fore.RED + 'P',
+             'T': Style.RESET_ALL + Back.RED + Fore.BLACK + 'T',
+             'U': Style.RESET_ALL + Back.WHITE + Fore.BLACK + 'U',
+             'F': Style.RESET_ALL + Back.BLUE + 'F',
+             'W': Style.RESET_ALL + Back.YELLOW + Fore.BLACK + 'W',
+             'Y': Style.RESET_ALL + Back.LIGHTCYAN_EX + Fore.BLACK + 'Y',
+             'Z': Style.RESET_ALL + 'Z'
+             }
+
+except ModuleNotFoundError:
+    COLOR = {'X': 'X',
+             'L': 'L',
+             'V': 'V',
+             'I': 'I',
+             'N': 'N',
+             'P': 'P',
+             'T': 'T',
+             'U': 'U',
+             'F': 'F',
+             'W': 'W',
+             'Y': 'Y',
+             'Z': 'Z'
+             }
+
+
 sys.setrecursionlimit(10000)
 
 """
@@ -145,7 +180,7 @@ shapes = {
 }
 
 # formes possibles
-FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
+FREE_PENTOMINOS = ["X","L","V","I","N","P","T","U","F","W","Y","Z"]
 
 FORM = dict()
 
@@ -169,6 +204,15 @@ def print_shape(shape):
                 printstring += ' '*number
         printstring += '\n'
     print(printstring[:-1])
+
+def print_sol(sol):
+    table_sol = [[None for _ in range(N)] for __ in range(M)]
+    for cell in sol:
+        if type(cell) is int:
+            table_sol[cell//N][cell%N] = COLOR[sol[cell]]
+    for line in table_sol:
+        print(''.join(line))
+
 
 
 def compactmat_to_mat(shape):
@@ -281,14 +325,11 @@ def main(argv=[]):
         # print('-' * 12)
         # for i, j in VAR_FORM.items():
         #     print(i, j)
-        print(count)
-        print("boucle f", f, file=sys.stderr)
         # import time
         # time.sleep(10)
 
         for quintuplet in quintuplets:
             if 0 in quintuplet:
-                print('boucle 0', file=sys.stderr)
                 FORM_bis[f] = {quintuplet}
                 for f2, qs2 in FORM_bis.items():
                     if f2 != f:
@@ -338,18 +379,23 @@ def main(argv=[]):
 
                                 for othershape in VAR_FORM[cell]:
                                       for otherquintuplet in qs2:
-                                        if othershape != f2 and cell not in otherquintuplet:
+                                        if othershape != f2 and othershape != f and cell not in otherquintuplet:
                                             setquint.add((othershape, otherquintuplet))
                                 if setquint:
-                                    # print(cell, shape, setquint)
+                                    # print('setquint', cell, f2, setquint)
                                     P.add_constraint(cell, f2, setquint)
 
+                for cell in quintuplet:
+                    P.add_constraint(cell, f, {(f, quintuplet)})
 
                 print('Solving {0}...'.format(f))
                 t = time.time()
+                t2 = time.time()
                 for sol in P.solve_all():
-                    print(sol)
                     count += 1
+                    print('Time for sol. n˚{} : {}'.format(count, time.time() - t2))
+                    print_sol(sol)
+                    t2 = time.time()
                 print('Solved {0} in {1}.'.format(f, time.time() - t))
                 del P
 
