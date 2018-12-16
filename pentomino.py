@@ -316,17 +316,6 @@ def main(argv=[]):
     for f in FREE_PENTOMINOS:
         quintuplets = FORM[f]
         FORM_bis = copy.deepcopy(FORM)
-        # for f2 in FORM:
-        #     FORM_bis[f2] = FORM[f2].copy()
-
-        # print(f)
-        # for i, j in FORM_bis.items():
-        #     print(i, j)
-        # print('-' * 12)
-        # for i, j in VAR_FORM.items():
-        #     print(i, j)
-        # import time
-        # time.sleep(10)
 
         for quintuplet in quintuplets:
             if 0 in quintuplet:
@@ -393,7 +382,7 @@ def main(argv=[]):
                 t2 = time.time()
                 for sol in P.solve_all():
                     count += 1
-                    print('Time for sol. n˚{} : {}'.format(count, time.time() - t2))
+                    print('Time for sol. n˚{} : {} -- Total: {}'.format(count, time.time() - t2, time.time()-t))
                     print_sol(sol)
                     t2 = time.time()
                 print('Solved {0} in {1}.'.format(f, time.time() - t))
