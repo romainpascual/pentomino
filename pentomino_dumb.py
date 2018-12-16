@@ -3,6 +3,45 @@
 import sys
 from constraint_programming import constraint_program
 
+import time
+
+try:
+    import colorama
+    from colorama import Fore, Back, Style
+    colorama.init(autoreset=True)
+
+    COLOR = {'X': Style.RESET_ALL + Back.CYAN + Fore.BLACK + 'X',
+             'L': Style.RESET_ALL + Back.LIGHTYELLOW_EX + Fore.BLACK + 'L',
+             'V': Style.RESET_ALL + Back.LIGHTMAGENTA_EX + Fore.BLACK + 'V',
+             'I': Style.RESET_ALL + Back.MAGENTA + 'I',
+             'N': Style.RESET_ALL + Back.LIGHTBLUE_EX + 'N',
+             'P': Style.RESET_ALL + Back.LIGHTGREEN_EX + Fore.RED + 'P',
+             'T': Style.RESET_ALL + Back.RED + Fore.BLACK + 'T',
+             'U': Style.RESET_ALL + Back.WHITE + Fore.BLACK + 'U',
+             'F': Style.RESET_ALL + Back.BLUE + 'F',
+             'W': Style.RESET_ALL + Back.YELLOW + Fore.BLACK + 'W',
+             'Y': Style.RESET_ALL + Back.LIGHTCYAN_EX + Fore.BLACK + 'Y',
+             'Z': Style.RESET_ALL + 'Z'
+             }
+
+except ModuleNotFoundError:
+    COLOR = {'X': 'X',
+             'L': 'L',
+             'V': 'V',
+             'I': 'I',
+             'N': 'N',
+             'P': 'P',
+             'T': 'T',
+             'U': 'U',
+             'F': 'F',
+             'W': 'W',
+             'Y': 'Y',
+             'Z': 'Z'
+             }
+
+    sys.setrecursionlimit(10000)
+
+
 """
 En gros vous disposez de 12 formes appelés pentominos, composées chacune de 5 cases unitaires,
  que vous devez placer sur une grille composée de 60 cases. Les formes ne doivent pas se superposer,
@@ -167,6 +206,14 @@ def print_shape(shape):
         printstring += '\n'
     print(printstring[:-1])
 
+def print_sol(sol):
+    table_sol = [[None for _ in range(N)] for __ in range(M)]
+    for cell in sol:
+        if type(cell) is int:
+            table_sol[cell//N][cell%N] = COLOR[sol[cell]]
+    for line in table_sol:
+        print(''.join(line))
+
 
 
 def compactmat_to_mat(shape):
@@ -305,14 +352,18 @@ def main(argv=[]):
                     # print(cell, shape, setquint)
                     P.add_constraint(cell, shape, setquint)
 
-    print('Solving...')
-    sys.setrecursionlimit(10000)
     count = 0
+    print('Solving...')
+    t = time.time()
+    t2 = time.time()
     for sol in P.solve_all():
-        print(sol)
         count += 1
-    print('Solved.')
+        print('Time for sol. n˚{} : {} -- Total: {}'.format(count, time.time() - t2, time.time()-t))
+        print_sol(sol)
+        t2 = time.time()
+    print('Solved in a total time of: {}s'.format(time.time() - t))
     print('Final count: ', count)
+
 
 if __name__ == '__main__':
     main()
