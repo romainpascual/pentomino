@@ -88,35 +88,10 @@ class constraint_program:
         """
         best = None
         for x in self.var:
-            if type(x) is str and self.assign[x] is not None:
-                for cell in self.assign[x]:
-                    if self.assign[cell] is None:
-                        return cell
-        for x in self.var:
             if self.assign[x] is None and \
-                    (best is None or type(x) is str):
-                if type(x) is str:
-                    if len(self.var[x]) < len(self.var[best]) or type(best) is int:
-                        best = x
-                elif type(best) is not str:
-                    best = x
-        # print('best', best)
-        # print(self.assign)
+                    (best is None or len(self.var[x]) < len(self.var[best])):
+                best = x
         return best
-
-    # def choice_var(self):
-    #     """Choose a branching variable
-    #
-    #     :returns: a variable index x such that assign[x] == None and its domain is minimal
-    #     """
-    #     best = None
-    #     for x in self.var:
-    #         if self.assign[x] is None and \
-    #                 (best is None or len(self.var[x]) < len(self.var[best])):
-    #             best = x
-    #     print('best', best)
-    #     print(self.assign)
-    #     return best
 
     def backward_check(self, x, u):
         for (y, rel) in self.constr[x]:
