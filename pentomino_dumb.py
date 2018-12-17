@@ -305,11 +305,11 @@ def main(argv=[]):
                     # print(cell, shape, setquint)
                     P.add_constraint(cell, shape, setquint)
 
-    print('Solving...')
+    print('Solving {}x{}...'.format(M,N))
     sys.setrecursionlimit(10000)
     count = 0
     for sol in P.solve_all():
-        print(sol)
+        #print(sol)
         count += 1
     print('Solved.')
     print('Final count: ', count)
