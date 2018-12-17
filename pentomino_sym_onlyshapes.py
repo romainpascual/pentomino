@@ -178,7 +178,7 @@ shapes = {
 }
 
 # formes possibles
-FREE_PENTOMINOS = ["X","L","V","I","N","P","T","U","F","W","Y","Z"]
+FREE_PENTOMINOS = ["X","I","V","L","N","P","T","U","F","W","Y","Z"]
 
 FORM = dict()
 FORM["F"] = possibles(F)
@@ -330,9 +330,11 @@ def main(argv=[]):
                     if f2 != f:
                         _remove = set()
                         for q2 in qs2:
-                            if 0 in q2:
+                            if set(q2).intersection(quintuplet):
                                 _remove.add(q2)
                         FORM_bis[f2].difference_update(_remove)
+
+                del FORM_bis[f]
 
                 P = constraint_program(FORM_bis)
                 P.set_arc_consistency()
@@ -342,8 +344,9 @@ def main(argv=[]):
 
                 for index, shape in enumerate(FREE_PENTOMINOS):
                     for index2 in range(index):
-                        shape2 = FREE_PENTOMINOS[index2]
-                        P.add_constraint(shape, shape2, SHAPE_NO_COLLISION_CONSTRAINT(shape, shape2))
+                            shape2 = FREE_PENTOMINOS[index2]
+                            if shape != f and shape2 != f:
+                                P.add_constraint(shape, shape2, SHAPE_NO_COLLISION_CONSTRAINT(shape, shape2))
 
 
                 print('Solving {0}...'.format(f))
@@ -352,6 +355,7 @@ def main(argv=[]):
                 for sol in P.solve_all():
                     count += 1
                     print('Time for sol. n˚{} : {} -- Total: {}'.format(count, time.time() - t2, time.time()-t))
+                    sol[f] = quintuplet
                     print_sol(sol)
                     t2 = time.time()
                 print('Solved {0} in {1}.'.format(f, time.time() - t))
@@ -367,5 +371,5 @@ def main(argv=[]):
 
 
 if __name__ == '__main__':
-    main()
+    curses.wrapper(main)
 

@@ -344,6 +344,10 @@ def main(argv=[]):
                             for cell in q2:
                                 VAR_FORM[cell].update({f2})
 
+                for i in quintuplet:
+                    del VAR_FORM[i]
+                del FORM_bis[f]
+
                 P = constraint_program({**copy.deepcopy(VAR_FORM), **copy.deepcopy(FORM_bis)})
                 P.set_arc_consistency()
 
@@ -374,8 +378,8 @@ def main(argv=[]):
                                     # print('setquint', cell, f2, setquint)
                                     P.add_constraint(cell, f2, setquint)
 
-                for cell in quintuplet:
-                    P.add_constraint(cell, f, {(f, quintuplet)})
+                # for cell in quintuplet:
+                #     P.add_constraint(cell, f, {(f, quintuplet)})
 
                 print('Solving {0}...'.format(f))
                 t = time.time()
@@ -383,6 +387,9 @@ def main(argv=[]):
                 for sol in P.solve_all():
                     count += 1
                     print('Time for sol. n˚{} : {} -- Total: {}'.format(count, time.time() - t2, time.time()-t))
+                    for i in quintuplet:
+                        sol[i] = f
+                    sol[f] = quintuplet
                     print_sol(sol)
                     t2 = time.time()
                 print('Solved {0} in {1}.'.format(f, time.time() - t))
