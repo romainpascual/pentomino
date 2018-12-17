@@ -39,7 +39,9 @@ except ModuleNotFoundError:
              'Z': 'Z'
              }
 
-    sys.setrecursionlimit(10000)
+import copy
+
+sys.setrecursionlimit(10000)
 
 
 """
@@ -208,9 +210,10 @@ def print_shape(shape):
 
 def print_sol(sol):
     table_sol = [[None for _ in range(N)] for __ in range(M)]
-    for cell in sol:
-        if type(cell) is int:
-            table_sol[cell//N][cell%N] = COLOR[sol[cell]]
+    print(sol)
+    for shape in sol:
+        for cell in sol[shape]:
+            table_sol[cell//N][cell%N] = COLOR[shape]
     for line in table_sol:
         print(''.join(line))
 
@@ -325,37 +328,20 @@ def main(argv=[]):
                 VAR_FORM[cell].update({shape})
 
 
-    P = constraint_program({**VAR_FORM, **FORM})
+    P = constraint_program(copy.deepcopy(FORM))
     P.set_arc_consistency()
 
-    '''
-    On note d le degré max, c’est-à-dire le nombre max de variables liées à une variable fixée,
-    n le nombre de variables et m la majoration de la taille des domaines des variables.
-    arc_consistency implémente AC3 qui est en complexité O(ndm^3)
-    n = 72
-    d = 60
-    m ~= 200
-    '''
 
-    for cell in range(N*M):
-        for shape, quintuplets in FORM.items():
-            setquint = set()
-            for quintuplet in quintuplets:
-                if cell in quintuplet and shape in VAR_FORM[cell]:
-                    setquint.add((shape, quintuplet))
+    SHAPE_NO_COLLISION_CONSTRAINT = lambda x,y: {(q1, q2) for q1 in FORM[x] for q2 in FORM[y] if not set(q1).intersection(q2)}
 
-            for othershape in VAR_FORM[cell]:
-                for otherquintuplet in quintuplets:
-                    if othershape != shape and cell not in otherquintuplet:
-                        setquint.add((othershape, otherquintuplet))
-            if setquint:
-                    # print(cell, shape, setquint)
-                    P.add_constraint(cell, shape, setquint)
+    for index, shape in enumerate(FREE_PENTOMINOS):
+        for index2 in range(index):
+            shape2 = FREE_PENTOMINOS[index2]
+            P.add_constraint(shape, shape2, SHAPE_NO_COLLISION_CONSTRAINT(shape, shape2))
 
 
-    print('Solving {}x{}...'.format(M,N))
-    sys.setrecursionlimit(10000)
     count = 0
+    print('Solving...')
     t = time.time()
     t2 = time.time()
     for sol in P.solve_all():

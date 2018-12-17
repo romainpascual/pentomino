@@ -6,6 +6,16 @@
 
 import sys
 
+import colorama
+
+
+def move_cursor(x, y):
+    print("\x1b[{};{}H".format(y + 1, x + 1))
+
+
+def clear():
+    print("\x1b[2J")
+
 
 class constraint_program:
     """Implements a basic constraint programming solver with binary constraints.
@@ -91,6 +101,10 @@ class constraint_program:
             if self.assign[x] is None and \
                     (best is None or len(self.var[x]) < len(self.var[best])):
                 best = x
+        # clear()
+        # move_cursor(0, 0)
+        # for shape, quint in self.assign.items():
+        #     print(shape, quint)
         return best
 
     def backward_check(self, x, u):

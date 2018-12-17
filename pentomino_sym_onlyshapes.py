@@ -39,7 +39,9 @@ except ModuleNotFoundError:
              'Z': 'Z'
              }
 
-    sys.setrecursionlimit(10000)
+import copy
+
+sys.setrecursionlimit(10000)
 
 
 """
@@ -128,6 +130,7 @@ les solutions symmétriques.
 
 F = [[0,1,1], [1,1,0], [0,1,0]]
 
+corners = set([0,N-1, (M-1)*N, N*M-1])
 
 def cell(i,j):
     """
@@ -175,7 +178,7 @@ shapes = {
 }
 
 # formes possibles
-FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
+FREE_PENTOMINOS = ["X","I","V","L","N","P","T","U","F","W","Y","Z"]
 
 FORM = dict()
 FORM["F"] = possibles(F)
@@ -208,9 +211,10 @@ def print_shape(shape):
 
 def print_sol(sol):
     table_sol = [[None for _ in range(N)] for __ in range(M)]
-    for cell in sol:
-        if type(cell) is int:
-            table_sol[cell//N][cell%N] = COLOR[sol[cell]]
+    print(sol)
+    for shape in sol:
+        for cell in sol[shape]:
+            table_sol[cell//N][cell%N] = COLOR[shape]
     for line in table_sol:
         print(''.join(line))
 
@@ -305,7 +309,6 @@ def main(argv=[]):
     #         print('-'*12)
 
     print('-'*8)
-    # print(all_shapes)
 
     for forme in all_shapes:
         free_shapes = all_shapes[forme]
@@ -314,59 +317,59 @@ def main(argv=[]):
             l += possibles(fs)
         FORM[forme] = set(l)
 
-    VAR_FORM = dict()
-    for cell in range(N*M):
-        VAR_FORM[cell] = set()
-
-
-    for shape, quintuplets in FORM.items():
-        for quintuplet in quintuplets:
-            for cell in quintuplet:
-                VAR_FORM[cell].update({shape})
-
-
-    P = constraint_program({**VAR_FORM, **FORM})
-    P.set_arc_consistency()
-
-    '''
-    On note d le degré max, c’est-à-dire le nombre max de variables liées à une variable fixée,
-    n le nombre de variables et m la majoration de la taille des domaines des variables.
-    arc_consistency implémente AC3 qui est en complexité O(ndm^3)
-    n = 72
-    d = 60
-    m ~= 200
-    '''
-
-    for cell in range(N*M):
-        for shape, quintuplets in FORM.items():
-            setquint = set()
-            for quintuplet in quintuplets:
-                if cell in quintuplet and shape in VAR_FORM[cell]:
-                    setquint.add((shape, quintuplet))
-
-            for othershape in VAR_FORM[cell]:
-                for otherquintuplet in quintuplets:
-                    if othershape != shape and cell not in otherquintuplet:
-                        setquint.add((othershape, otherquintuplet))
-            if setquint:
-                    # print(cell, shape, setquint)
-                    P.add_constraint(cell, shape, setquint)
-
-
-    print('Solving {}x{}...'.format(M,N))
-    sys.setrecursionlimit(10000)
     count = 0
-    t = time.time()
-    t2 = time.time()
-    for sol in P.solve_all():
-        count += 1
-        print('Time for sol. n˚{} : {} -- Total: {}'.format(count, time.time() - t2, time.time()-t))
-        print_sol(sol)
-        t2 = time.time()
-    print('Solved in a total time of: {}s'.format(time.time() - t))
-    print('Final count: ', count)
+
+    for f in FREE_PENTOMINOS:
+        quintuplets = FORM[f]
+        FORM_bis = copy.deepcopy(FORM)
+
+        for quintuplet in quintuplets:
+            if 0 in quintuplet:
+                FORM_bis[f] = {quintuplet}
+                for f2, qs2 in FORM_bis.items():
+                    if f2 != f:
+                        _remove = set()
+                        for q2 in qs2:
+                            if set(q2).intersection(quintuplet):
+                                _remove.add(q2)
+                        FORM_bis[f2].difference_update(_remove)
+
+                del FORM_bis[f]
+
+                P = constraint_program(FORM_bis)
+                P.set_arc_consistency()
+
+
+                SHAPE_NO_COLLISION_CONSTRAINT = lambda x,y: {(q1, q2) for q1 in FORM_bis[x] for q2 in FORM_bis[y] if not set(q1).intersection(q2)}
+
+                for index, shape in enumerate(FREE_PENTOMINOS):
+                    for index2 in range(index):
+                            shape2 = FREE_PENTOMINOS[index2]
+                            if shape != f and shape2 != f:
+                                P.add_constraint(shape, shape2, SHAPE_NO_COLLISION_CONSTRAINT(shape, shape2))
+
+
+                print('Solving {0}...'.format(f))
+                t = time.time()
+                t2 = time.time()
+                for sol in P.solve_all():
+                    count += 1
+                    print('Time for sol. n˚{} : {} -- Total: {}'.format(count, time.time() - t2, time.time()-t))
+                    sol[f] = quintuplet
+                    print_sol(sol)
+                    t2 = time.time()
+                print('Solved {0} in {1}.'.format(f, time.time() - t))
+                del P
+
+        # remove f from angles
+        to_remove = set()
+        for q in quintuplets:
+            if set(q).intersection(corners):
+                to_remove.add(q)
+        # print('on supprime {} de {}'.format(to_remove, f))
+        FORM[f].difference_update(to_remove)
 
 
 if __name__ == '__main__':
-    main()
+    curses.wrapper(main)
 
