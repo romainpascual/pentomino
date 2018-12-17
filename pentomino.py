@@ -324,7 +324,7 @@ def main(argv=[]):
                     if f2 != f:
                         _remove = set()
                         for q2 in qs2:
-                            if 0 in q2:
+                            if set(q2).intersection(set(quintuplet)):
                                 _remove.add(q2)
                         FORM_bis[f2].difference_update(_remove)
 
