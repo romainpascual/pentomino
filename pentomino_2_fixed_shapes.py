@@ -181,30 +181,9 @@ shapes = {
 }
 
 # formes possibles
-FREE_PENTOMINOS = ["U","V","X","I","N","P","T","L","F","W","Y","Z"]
+FREE_PENTOMINOS = ["U","V","X","Z","N","P","T","W","F","Y","L","I"]
 
-FORM = dict()
-
-VAR = {}
-
-for k in range(M*N):
-    VAR[k]=set(FREE_PENTOMINOS)
-
-P = constraint_program(VAR)
-
-
-def print_shape(shape):
-    printstring = ''
-    for line in shape:
-        while line:
-            if len(line)%2 == 1:
-                number = line.pop(0)
-                printstring += '#'*number
-            else:
-                number = line.pop(0)
-                printstring += ' '*number
-        printstring += '\n'
-    print(printstring[:-1])
+SHAPES = dict()
 
 def print_sol(sol):
     table_sol = [[None for _ in range(N)] for __ in range(M)]
@@ -213,7 +192,6 @@ def print_sol(sol):
             table_sol[cell//N][cell%N] = COLOR[sol[cell]]
     for line in table_sol:
         print(''.join(line))
-
 
 
 def compactmat_to_mat(shape):
@@ -235,11 +213,6 @@ def compactmat_to_mat(shape):
             line.append(0)
     return shape_matrix
 
-    # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in shape_matrix]))
-    # print('-'*12)
-
-
-
 
 def get_all_shapes(shape_matrix):
     # yielding rotated matrix
@@ -249,176 +222,115 @@ def get_all_shapes(shape_matrix):
         symmetric_matrix = list(zip(*symmetric_matrix[::-1]))
         yield shape_matrix
         yield symmetric_matrix
-    # translated = shape_matrix[::-1]  # Y axis symmetry
-    # translatedXY [line[::-1] for line in shape_matrix][::1]  # X and Y symmetry
 
-# for forme in shapes:
-#     repr_to_mat(forme[:])
 
-def mat_to_compactmat(shape_matrix):
-
-    compactmat = []
-    for line_count, line in enumerate(shape_matrix[:]):
-        line = line[:]
-        compactmat.append([])
-        while line[-1] == 0:
-            line.pop()
-        last_char = line[0]
-        count = 0
-        while line:
-            current_char = line.pop(0)
-            if current_char != last_char:
-                compactmat[line_count].append(current_char * count)
-                last_char = current_char
-                count = 0
-            count+=1
-        if current_char == 1:
-            compactmat[line_count].append(current_char * count)
-    return compactmat
-
-def main(argv=[]):
+if __name__ == '__main__':
     all_shapes = dict()
 
     try:
-        if N*M != 60:
+        if N * M != 60:
             print("invalid size")
 
     except Exception as e:
-        print("exception ",e)
+        print("exception ", e)
 
     for shape_name, shape in shapes.items():
         shape_matrix = compactmat_to_mat(shape[:])
         shape_set = set()
         for modified_shape in get_all_shapes(shape_matrix[:]):
-            # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in modified_shape]))
             shape_set.add(tuple(modified_shape))
         all_shapes[shape_name] = list(map(list, [map(list, line) for line in shape_set]))
 
-    # for shape_name, shape_set in all_shapes.items():
-    #     print('-'*18)
-    #     print("{} a {} alternatives.".format(shape_name, len(shape_set)))
-    #     print(shape_name, ':')
-    #     for shape_matrix in shape_set:
-    #         # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in shape_matrix]))
-    #         print_shape(mat_to_compactmat(shape_matrix[:]))
-    #         print('-'*12)
+    print('-' * 8)
 
-    print('-'*8)
-
-    for forme in all_shapes:
-        free_shapes = all_shapes[forme]
+    for shape in all_shapes:
+        free_shapes = all_shapes[shape]
         l = []
         for fs in free_shapes:
             l += possibles(fs)
-        FORM[forme] = set(l)
- 
+        SHAPES[shape] = set(l)
+
     count = 0
     t = time.time()
 
-    for index, f in enumerate(FREE_PENTOMINOS):
-        for index2 in range(index+1, len(FREE_PENTOMINOS)):
-            fprime = FREE_PENTOMINOS[index2]
-            if fprime != f:
-                quintuplets = FORM[f]
-                quintupletsprime = FORM[fprime]
-                for quintuplet in quintuplets:
-                    if 0 in quintuplet:
-                        for quintupletprime in quintupletsprime:
-                            if N-1 in quintupletprime:
-                                FORM_bis = copy.deepcopy(FORM)
-                                FORM_bis[f] = {quintuplet}
-                                FORM_bis[fprime] = {quintupletprime}
-                                for f2, qs2 in FORM_bis.items():
-                                    if f2 != f and f2 != fprime:
-                                        _remove = set()
-                                        for q2 in qs2:
-                                            if set(q2).intersection(set(quintuplet)) or set(q2).intersection(quintupletprime):
-                                                _remove.add(q2)
-                                        FORM_bis[f2].difference_update(_remove)
+    for index_top_left, shape_top_left in enumerate(FREE_PENTOMINOS):
+        quintuplets_top_left = SHAPES[shape_top_left]
+        for index_top_right in range(index_top_left + 1, len(FREE_PENTOMINOS)):
+            shape_top_right = FREE_PENTOMINOS[index_top_right]
+            quintuplets_top_right = SHAPES[shape_top_right]
+            for quintuplet_top_left in quintuplets_top_left:
+                if 0 in quintuplet_top_left:
+                    for quintuplet_top_right in quintuplets_top_right:
+                        if N - 1 in quintuplet_top_right:
+                            VAR_SHAPES = copy.deepcopy(SHAPES)
 
-                                VAR_FORM = dict()
-                                for cell in range(N*M):
-                                    if cell in quintuplet:
-                                        VAR_FORM[cell] = {f}
-                                    elif cell in quintupletprime:
-                                        VAR_FORM[cell] = {fprime}
-                                    else :
-                                        VAR_FORM[cell] = set(FREE_PENTOMINOS)
-                                        VAR_FORM[cell].remove(f)
-                                        VAR_FORM[cell].remove(fprime)
+                            del VAR_SHAPES[shape_top_left]
+                            del VAR_SHAPES[shape_top_right]
 
-                                # for f2, qs2 in FORM_bis.items():
-                                #     for q2 in qs2:
-                                #         if not any(c in quintuplet for c in q2):
-                                #             for cell in q2:
-                                #                 VAR_FORM[cell].update({f2})
+                            for shape_current, quintuplets_current in VAR_SHAPES.items():
+                                _remove = set()
+                                for quintuplet_current in quintuplets_current:
+                                    if set(quintuplet_current).intersection(set(quintuplet_top_left)) \
+                                            or set(quintuplet_current).intersection(quintuplet_top_right):
+                                        _remove.add(quintuplet_current)
+                                VAR_SHAPES[shape_current].difference_update(_remove)
 
-                                for i in quintuplet:
-                                    del VAR_FORM[i]
-                                for i in quintupletprime:
-                                    del VAR_FORM[i]
-                                del FORM_bis[f]
-                                del FORM_bis[fprime]
+                            VAR_CELLS = dict()
+                            for cell in range(N * M):
+                                VAR_CELLS[cell] = set(FREE_PENTOMINOS)
+                                VAR_CELLS[cell].remove(shape_top_left)
+                                VAR_CELLS[cell].remove(shape_top_right)
 
-                                P = constraint_program({**copy.deepcopy(VAR_FORM), **copy.deepcopy(FORM_bis)})
-                                P.set_arc_consistency()
+                            for cell in quintuplet_top_left:
+                                del VAR_CELLS[cell]
+                            for cell in quintuplet_top_right:
+                                del VAR_CELLS[cell]
 
-                                # print('#'*12)
-                                # print(f)
-                                # for i, j in FORM_bis.items():
-                                #     print(i, j)
-                                # print('-'*12)
-                                # for i, j in VAR_FORM.items():
-                                #     print(i,j)
-                                # print("sleep", file=sys.stderr)
-                                # # time.sleep(10)
+                            P = constraint_program({**copy.deepcopy(VAR_CELLS), **copy.deepcopy(VAR_SHAPES)})
+                            P.set_arc_consistency()
 
-                                for cell in range(N*M):
-                                    if cell not in quintuplet and cell not in quintupletprime:
-                                        for f2, qs2 in FORM_bis.items():
-                                            if f2 != f and f2 != fprime:
-                                                setquint = set()
-                                                for q2 in qs2:
-                                                    if cell in q2 and f2 in VAR_FORM[cell]:
-                                                        setquint.add((f2, q2))
+                            for cell in range(N * M):
+                                if cell not in quintuplet_top_left and cell not in quintuplet_top_right:
+                                    for shape_current, quintuplets_current in VAR_SHAPES.items():
+                                        setquint = set()
+                                        for quintuplet_current in quintuplets_current:
+                                            if cell in quintuplet_current and shape_current in VAR_CELLS[cell]:
+                                                setquint.add((shape_current, quintuplet_current))
 
-                                                for othershape in VAR_FORM[cell]:
-                                                      for otherquintuplet in qs2:
-                                                        if othershape != f2 and othershape != f and othershape != fprime and cell not in otherquintuplet:
-                                                            setquint.add((othershape, otherquintuplet))
-                                                if setquint:
-                                                    P.add_constraint(cell, f2, setquint)
+                                        for othershape in VAR_CELLS[cell]:
+                                            for otherquintuplet in quintuplets_current:
+                                                if othershape != shape_current and cell not in otherquintuplet:
+                                                    setquint.add((othershape, otherquintuplet))
+                                        if setquint:
+                                            P.add_constraint(cell, shape_current, setquint)
 
-                                # for cell in quintuplet:
-                                #     P.add_constraint(cell, f, {(f, quintuplet)})
-
-                                print('Solving {} {} + {} {}...'.format(f, quintuplet, fprime, quintupletprime))
+                            print('Solving {} {} + {} {}...'.format(shape_top_left,
+                                                                    quintuplet_top_left,
+                                                                    shape_top_right,
+                                                                    quintuplet_top_right))
+                            t2 = time.time()
+                            for sol in P.solve_all():
+                                count += 1
+                                print('Time for sol. n˚{} : {} -- Total: {}'.format(count, time.time() - t2,
+                                                                                    time.time() - t))
+                                for i in quintuplet_top_left:
+                                    sol[i] = shape_top_left
+                                for i in quintuplet_top_right:
+                                    sol[i] = shape_top_right
+                                sol[shape_top_left] = quintuplet_top_left
+                                sol[shape_top_right] = quintuplet_top_right
+                                print_sol(sol)
                                 t2 = time.time()
+                            # print('Solved {0} in {1}.'.format(f, time.time() - t))
+                            del P
 
-                                for sol in P.solve_all():
-                                    count += 1
-                                    print('Time for sol. n˚{} : {} -- Total: {}'.format(count, time.time() - t2, time.time()-t))
-                                    for i in quintuplet:
-                                        sol[i] = f
-                                    for i in quintupletprime:
-                                        sol[i] = fprime
-                                    sol[f] = quintuplet
-                                    sol[fprime] = quintupletprime
-                                    print_sol(sol)
-                                    t2 = time.time()
-                                # print('Solved {0} in {1}.'.format(f, time.time() - t))
-                                del P
-
-        # remove f from angles
+        # remove shape_top_left from corners
         to_remove = set()
-        for q in quintuplets:
-            if set(q).intersection(corners):
-                to_remove.add(q)
-        # print('on supprime {} de {}'.format(to_remove, f))
-        FORM[f].difference_update(to_remove)
+        for quintuplet_top_left in quintuplets_top_left:
+            if set(quintuplet_top_left).intersection(corners):
+                to_remove.add(quintuplet_top_left)
+        print('on supprime {} de {}'.format(to_remove, shape_top_left))
+        SHAPES[shape_top_left].difference_update(to_remove)
 
     print('Final count: ', count)
-
-if __name__ == '__main__':
-    main()
 
