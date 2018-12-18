@@ -351,19 +351,19 @@ def main(argv=[]):
                     # print(cell, shape, setquint)
                     P.add_constraint(cell, shape, setquint)
 
-
+    print_one = True
     print('Solving {}x{}...'.format(M,N))
     sys.setrecursionlimit(10000)
     count = 0
     t = time.time()
-    t2 = time.time()
     for sol in P.solve_all():
         count += 1
-        print('Time for sol. n˚{} : {} -- Total: {}'.format(count, time.time() - t2, time.time()-t))
-        print_sol(sol)
-        t2 = time.time()
-    print('Solved in a total time of: {}s'.format(time.time() - t))
-    print('Final count: ', count)
+        if print_one:
+            print('Time for sol. n˚{} : {.2f}'.format(count, time.time()-t))
+            print_sol(sol)
+            print_one = False
+    print('Solved in a total time of: {.2f}s'.format(time.time() - t))
+    print('Final count: {} solutions'.format(count//4))
 
 
 if __name__ == '__main__':

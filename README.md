@@ -13,7 +13,8 @@ We want to draw a solution and give the total number of solutions, excluding tri
 - constraint_programming.py: CSP solver
 
 - pentomino_naive.py: naive implementation
-- pentomino_corners.py: we choose two shapes for the two upper corners
-- pentomino_corners_multiprocessing: we allow multi-processing
+- ? pentomino_corners.py: we choose two shapes for the two upper corners
+- ? pentomino_corners_multiprocessing: we allow multi-processing
 
 - documentation.pdf: some explanations on how we design the constraint satisfaction problem (variables and constraints)
+
