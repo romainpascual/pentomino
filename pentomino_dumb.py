@@ -1,9 +1,51 @@
 #!usr/bin/env pypy
 
-import sys
-from constraint_programming import constraint_program
+## Description du Problème
+	
+"""
+En gros vous disposez de 12 formes appelés pentominos, composées chacune de 5 cases unitaires,
+que vous devez placer sur une grille composée de 60 cases. Les formes ne doivent pas se superposer,
+mais peuvent être tournées ou retournées.
 
-import time
+Votre programme prendra en argument de ligne de commande une chaîne de la forme [m]x[n], indiquant 
+les dimensions de la grille à paver. Les seules entrées possibles sont 6x10, 5x12, 4x15, 3x20. 
+Puis votre programme devra afficher un pavage possible, sous forme d’un tableau de lettres, 
+puis un entier indiquant le nombre de pavages au total, à symmétrie près.
+
+Affichage attendu par votre programme.
+
+./pentomino.py 6x10
+IPPYYYYVVV
+IPPXYLLLLV
+IPXXXFZZLV
+ITWXFFFZUU
+ITWWNNFZZU
+TTTWWNNNUU
+2339
+
+#ici, m =6, n =10
+
+Travail:
+
+Comme il n’y a que 4 entrées possibles à votre code vous pourriez être tenté de les 
+stocker dans le code et d’afficher la réponse demandée. Mais pour ce devoir maison on 
+vous demande de calculer la solution à l’aide de notre solveur de programmation par contrainte.
+
+Pour cela vous devez modéliser le problème de pavage. Décrivez votre modèle précisément 
+dans un document qui accompagnera le code. Indiquez également comment vous avez éliminé 
+les solutions symmétriques.
+
+"""
+
+
+
+## Imports
+
+import sys, time
+from constraint_programming import constraint_program
+sys.setrecursionlimit(10000)
+
+## Utilisation de colorama pour le rendu
 
 try:
     import colorama
@@ -39,44 +81,10 @@ except ModuleNotFoundError:
              'Z': 'Z'
              }
 
-    sys.setrecursionlimit(10000)
 
+##################################################
 
-"""
-En gros vous disposez de 12 formes appelés pentominos, composées chacune de 5 cases unitaires,
- que vous devez placer sur une grille composée de 60 cases. Les formes ne doivent pas se superposer,
-  mais peuvent être tournées ou retournées.
-
-Votre programme prendra en argument de ligne de commande une chaîne de la forme [m]x[n], indiquant 
-les dimensions de la grille à paver. Les seules entrées possibles sont 6x10, 5x12, 4x15, 3x20. 
-Puis votre programme devra afficher un pavage possible, sous forme d’un tableau de lettres, 
-puis un entier indiquant le nombre de pavages au total, à symmétrie près.
-
-Affichage attendu par votre programme.
-
-./pentomino.py 6x10
-IPPYYYYVVV
-IPPXYLLLLV
-IPXXXFZZLV
-ITWXFFFZUU
-ITWWNNFZZU
-TTTWWNNNUU
-2339
-
-# m =6, n =10
-
-Travail:
-
-Comme il n’y a que 4 entrées possibles à votre code vous pourriez être tenté de les 
-stocker dans le code et d’afficher la réponse demandée. Mais pour ce devoir maison on 
-vous demande de calculer la solution à l’aide de notre solveur de programmation par contrainte.
-
-Pour cela vous devez modéliser le problème de pavage. Décrivez votre modèle précisément 
-dans un document qui accompagnera le code. Indiquez également comment vous avez éliminé 
-les solutions symmétriques.
-
-"""
-
+## Dessin des différentes formes
 
 """
     
@@ -125,8 +133,6 @@ les solutions symmétriques.
 """
 
 [M,N] = [int(x) for x in sys.argv[1].split("x")]
-
-F = [[0,1,1], [1,1,0], [0,1,0]]
 
 
 def cell(i,j):
@@ -178,7 +184,6 @@ shapes = {
 FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
 
 FORM = dict()
-FORM["F"] = possibles(F)
 
 VAR = {}
 
@@ -186,12 +191,6 @@ for k in range(M*N):
     VAR[k]=set(FREE_PENTOMINOS)
 
 P = constraint_program(VAR)
-
-"""
-for f in FORMES:
-    for k in range(m*n):
-        P.add_constraint(f,k {f,v) for}
-"""
 
 def print_shape(shape):
     printstring = ''
