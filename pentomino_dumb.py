@@ -211,7 +211,7 @@ def get_all_shapes(shape_matrix):
         yield symmetric_matrix
 
 
-## Main fonction our résoudre le problème du pavage par pentomino
+## Main fonction pour résoudre le problème du pavage par pentomino
 def main(argv=[]):
 	"""
     Fonction principale : créer le CSP, ses variables, ses contraintes et le résout à l'aide du solveur dédié
