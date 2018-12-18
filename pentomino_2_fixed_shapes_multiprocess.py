@@ -224,76 +224,78 @@ def get_all_shapes(shape_matrix):
         yield symmetric_matrix
 
 
-def solve_top_left(quintuplet_top_left):
-    count = 0
-    if 0 in quintuplet_top_left:
-        for quintuplet_top_right in quintuplets_top_right:
-            if N - 1 in quintuplet_top_right:
-                VAR_SHAPES = copy.deepcopy(SHAPES)
+def solve_top_right(quintuplet_top_right):
+    count_local = 0
+    if N - 1 in quintuplet_top_right:
+        VAR_SHAPES = copy.deepcopy(SHAPES)
 
-                del VAR_SHAPES[shape_top_left]
-                del VAR_SHAPES[shape_top_right]
+        del VAR_SHAPES[shape_top_left]
+        del VAR_SHAPES[shape_top_right]
 
+        for shape_current, quintuplets_current in VAR_SHAPES.items():
+            _remove = set()
+            for quintuplet_current in quintuplets_current:
+                if set(quintuplet_current).intersection(set(quintuplet_top_left)) \
+                        or set(quintuplet_current).intersection(quintuplet_top_right):
+                    _remove.add(quintuplet_current)
+            VAR_SHAPES[shape_current].difference_update(_remove)
+
+        VAR_CELLS = dict()
+        for cell in range(N * M):
+            VAR_CELLS[cell] = set(FREE_PENTOMINOS)
+            VAR_CELLS[cell].remove(shape_top_left)
+            VAR_CELLS[cell].remove(shape_top_right)
+
+        for cell in quintuplet_top_left:
+            del VAR_CELLS[cell]
+        for cell in quintuplet_top_right:
+            del VAR_CELLS[cell]
+
+        P = constraint_program({**copy.deepcopy(VAR_CELLS), **copy.deepcopy(VAR_SHAPES)})
+        P.set_arc_consistency()
+
+        for cell in range(N * M):
+            if cell not in quintuplet_top_left and cell not in quintuplet_top_right:
                 for shape_current, quintuplets_current in VAR_SHAPES.items():
-                    _remove = set()
+                    setquint = set()
                     for quintuplet_current in quintuplets_current:
-                        if set(quintuplet_current).intersection(set(quintuplet_top_left)) \
-                                or set(quintuplet_current).intersection(quintuplet_top_right):
-                            _remove.add(quintuplet_current)
-                    VAR_SHAPES[shape_current].difference_update(_remove)
+                        if cell in quintuplet_current and shape_current in VAR_CELLS[cell]:
+                            setquint.add((shape_current, quintuplet_current))
 
-                VAR_CELLS = dict()
-                for cell in range(N * M):
-                    VAR_CELLS[cell] = set(FREE_PENTOMINOS)
-                    VAR_CELLS[cell].remove(shape_top_left)
-                    VAR_CELLS[cell].remove(shape_top_right)
+                    for othershape in VAR_CELLS[cell]:
+                        for otherquintuplet in quintuplets_current:
+                            if othershape != shape_current and cell not in otherquintuplet:
+                                setquint.add((othershape, otherquintuplet))
+                    if setquint:
+                        P.add_constraint(cell, shape_current, setquint)
 
-                for cell in quintuplet_top_left:
-                    del VAR_CELLS[cell]
-                for cell in quintuplet_top_right:
-                    del VAR_CELLS[cell]
+        print('Solving {} {} + {} {}...'.format(shape_top_left,
+                                                quintuplet_top_left,
+                                                shape_top_right,
+                                                quintuplet_top_right))
+        t2 = time.time()
+        for sol in P.solve_all():
+            count_local += 1
+            print(
+                'Time for sol. n˚{} : {} -- Total: {}'.format(count + count_local, time.time() - t2,
+                                                              time.time() - t))
+            for i in quintuplet_top_left:
+                sol[i] = shape_top_left
+            for i in quintuplet_top_right:
+                sol[i] = shape_top_right
+            sol[shape_top_left] = quintuplet_top_left
+            sol[shape_top_right] = quintuplet_top_right
+            print_sol(sol)
+            t2 = time.time()
+        # print('Solved {0} in {1}.'.format(f, time.time() - t))
+        del P
+        return count_local
 
-                P = constraint_program({**copy.deepcopy(VAR_CELLS), **copy.deepcopy(VAR_SHAPES)})
-                P.set_arc_consistency()
-
-                for cell in range(N * M):
-                    if cell not in quintuplet_top_left and cell not in quintuplet_top_right:
-                        for shape_current, quintuplets_current in VAR_SHAPES.items():
-                            setquint = set()
-                            for quintuplet_current in quintuplets_current:
-                                if cell in quintuplet_current and shape_current in VAR_CELLS[cell]:
-                                    setquint.add((shape_current, quintuplet_current))
-
-                            for othershape in VAR_CELLS[cell]:
-                                for otherquintuplet in quintuplets_current:
-                                    if othershape != shape_current and cell not in otherquintuplet:
-                                        setquint.add((othershape, otherquintuplet))
-                            if setquint:
-                                P.add_constraint(cell, shape_current, setquint)
-
-                print('Solving {} {} + {} {}...'.format(shape_top_left,
-                                                        quintuplet_top_left,
-                                                        shape_top_right,
-                                                        quintuplet_top_right))
-                t2 = time.time()
-                for sol in P.solve_all():
-                    count += 1
-                    print('Time for sol. n˚{} : {} -- Total: {}'.format(count, time.time() - t2,
-                                                                        time.time() - t))
-                    for i in quintuplet_top_left:
-                        sol[i] = shape_top_left
-                    for i in quintuplet_top_right:
-                        sol[i] = shape_top_right
-                    sol[shape_top_left] = quintuplet_top_left
-                    sol[shape_top_right] = quintuplet_top_right
-                    print_sol(sol)
-                    t2 = time.time()
-                # print('Solved {0} in {1}.'.format(f, time.time() - t))
-                del P
 
 
 if __name__ == '__main__':
     all_shapes = dict()
+    count = 0
 
     try:
         if N * M != 60:
@@ -326,10 +328,12 @@ if __name__ == '__main__':
         for index_top_right in range(index_top_left + 1, len(FREE_PENTOMINOS)):
             shape_top_right = FREE_PENTOMINOS[index_top_right]
             quintuplets_top_right = SHAPES[shape_top_right]
-            pool = Pool()
-            pool.map(solve_top_left, quintuplets_top_left)
-            pool.close()
-            pool.join()
+            for quintuplet_top_left in quintuplets_top_left:
+                if 0 in quintuplet_top_left:
+                    pool = Pool()
+                    count += pool.map(solve_top_right, quintuplets_top_right)
+                    pool.close()
+                    pool.join()
 
         # remove shape_top_left from corners
         to_remove = set()
