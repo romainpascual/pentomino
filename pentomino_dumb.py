@@ -38,12 +38,12 @@ les solutions symmétriques.
 """
 
 
-
 ## Imports
 
 import sys, time
 from constraint_programming import constraint_program
 sys.setrecursionlimit(10000)
+
 
 ## Utilisation de colorama pour le rendu
 
@@ -81,8 +81,6 @@ except ModuleNotFoundError:
              'Z': 'Z'
              }
 
-
-##################################################
 
 ## Dessin des différentes formes
 
@@ -130,231 +128,192 @@ except ModuleNotFoundError:
     Z:  #       1
         ###     3
           #     21
+		  
 """
 
-[M,N] = [int(x) for x in sys.argv[1].split("x")]
+
+## Lecture de l'entrée
+
+# Cette lecture est nécéssaire en dehors du main parce que les variables sont utilisées
+# dans d'autres fonctions
+
+try:
+    [M, N] = [int(x) for x in sys.argv[1].split("x")]
+	if N*M != 60:
+            print("Invalid Size")
+			sys.exit(1)
+except IndexError:
+    print("Invalid args.")
+    sys.exit(1)
 
 
-def cell(i,j):
+## Fonction d'affichage
+
+def print_sol(sol):
     """
-    Renvoie la variable correspondant à la case i, j dans le tableau
+    Cette fonction permet d'afficher une solution dans la forme demandée.
+    """
+    table_sol = [[None for _ in range(N)] for __ in range(M)]
+	for cell in sol:
+		if type(cell) is int:
+			table_sol[cell//N][cell%N] = sol[cell]
+	for line in table_sol:
+		print(''.join(line))
+
+
+## Fonction pour la génération des variables et des contraintes.
+		
+def cell(i, j):
+    """
+    Renvoie la variable correspondant à la case i, j dans le tableau.
     """
     return i * N + j
 
+
 def possibles(forme):
     """
-    Génère les 5 uplets possibles à partir d'une forme libre donnée comme une matrice
+    Génère les 5 uplets possibles à partir d'une forme libre donnée comme une matrice.
 
     Par exemple,
     F = [[0,1,1], [1,1,0], [0,1,0]]
     """
 
     uplets = set()
-    rows,cols = len(forme), len(forme[0])
+    rows, cols = len(forme), len(forme[0])
 
     cases = []
 
     for i in range(rows):
         for j in range(cols):
             if forme[i][j]:
-                cases.append([i,j])
+                cases.append([i, j])
 
-    for i in range(M - rows +1):
-        for j in range(N-cols +1):
-            uplets.add(frozenset(map(lambda x:cell(x[0]+i,x[1]+j), cases)))
+    for i in range(M - rows + 1):
+        for j in range(N-cols + 1):
+            uplets.add(frozenset(map(lambda x: cell(x[0]+i, x[1]+j), cases)))
     return set(map(tuple, map(sorted, map(tuple, uplets))))
 
 
-shapes = {
-    'F': [[1, 2], [2], [1, 1]],
-    'I': [[5]],
-    'L': [[4], [1]],
-    'N': [[3], [2, 2]],
-    'P': [[3], [1, 2]],
-    'T': [[1], [3], [1]],
-    'U': [[1, 1, 1], [3]],
-    'V': [[3], [1], [1]],
-    'W': [[2], [1, 2], [2, 1]],
-    'X': [[1, 1], [3], [1, 1]],
-    'Y': [[1], [2], [1], [1]],
-    'Z': [[1], [3], [2, 1]]
-}
-
-# formes possibles
-FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
-
-FORM = dict()
-
-VAR = {}
-
-for k in range(M*N):
-    VAR[k]=set(FREE_PENTOMINOS)
-
-P = constraint_program(VAR)
-
-def print_shape(shape):
-    printstring = ''
-    for line in shape:
-        while line:
-            if len(line)%2 == 1:
-                number = line.pop(0)
-                printstring += '#'*number
-            else:
-                number = line.pop(0)
-                printstring += ' '*number
-        printstring += '\n'
-    print(printstring[:-1])
-
-def print_sol(sol):
-    table_sol = [[None for _ in range(N)] for __ in range(M)]
-    for cell in sol:
-        if type(cell) is int:
-            table_sol[cell//N][cell%N] = COLOR[sol[cell]]
-    for line in table_sol:
-        print(''.join(line))
-
-
-
-def compactmat_to_mat(shape):
-    shape_matrix = []
-    max_length = 0
-    for line_count, line in enumerate(shape):
-        line = line[:]
-        shape_matrix.append([])
-        while line:
-            if len(line)%2 == 1:
-                number = line.pop(0)
-                shape_matrix[line_count].extend([1 for _ in range(number)])
-            else:
-                number = line.pop(0)
-                shape_matrix[line_count].extend([0 for _ in range(number)])
-        max_length = max(max_length, len(shape_matrix[line_count]))
-    for line in shape_matrix:
-        while len(line) < max_length:
-            line.append(0)
-    return shape_matrix
-
-    # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in shape_matrix]))
-    # print('-'*12)
-
-
-
-
 def get_all_shapes(shape_matrix):
-    # yielding rotated matrix
-    symmetric_matrix = shape_matrix[::-1]  # Y axis symmetry
+    """
+    Cette fonction prend les formes et retourne les rotations et les symétries
+    """
+    # Il suffit de construire le symétrique puis de faire tourner les deux possibilités
+	
+	# Symétrie de l'axe Y
+    symmetric_matrix = shape_matrix[::-1] 
+	
+	# Rotation de la matrice
     for _ in range(4):
-        shape_matrix = list(zip(*shape_matrix[::-1]))  # rotate matrix
+        shape_matrix = list(zip(*shape_matrix[::-1]))
         symmetric_matrix = list(zip(*symmetric_matrix[::-1]))
         yield shape_matrix
         yield symmetric_matrix
-    # translated = shape_matrix[::-1]  # Y axis symmetry
-    # translatedXY [line[::-1] for line in shape_matrix][::1]  # X and Y symmetry
 
-# for forme in shapes:
-#     repr_to_mat(forme[:])
 
-def mat_to_compactmat(shape_matrix):
-
-    compactmat = []
-    for line_count, line in enumerate(shape_matrix[:]):
-        line = line[:]
-        compactmat.append([])
-        while line[-1] == 0:
-            line.pop()
-        last_char = line[0]
-        count = 0
-        while line:
-            current_char = line.pop(0)
-            if current_char != last_char:
-                compactmat[line_count].append(current_char * count)
-                last_char = current_char
-                count = 0
-            count+=1
-        if current_char == 1:
-            compactmat[line_count].append(current_char * count)
-    return compactmat
-
+## Main fonction our résoudre le problème du pavage par pentomino
 def main(argv=[]):
+	"""
+    Fonction principale : créer le CSP, ses variables, ses contraintes et le résout à l'aide du solveur dédié
+    """
+
+	###
+	# On génère le domaines des variables de forme
+	###
+	
+	shapes = {
+	'F': [[0, 1, 1], [1, 1, 0], [0, 1, 0]],
+	'I': [[1, 1, 1, 1, 1]],
+	'L': [[1, 1, 1, 1], [1, 0, 0, 0]],
+	'N': [[1, 1, 1, 0], [0, 0, 1, 1]],
+	'P': [[1, 1, 1], [0, 1, 1]],
+	'T': [[1, 0, 0], [1, 1, 1], [1, 0, 0]],
+	'U': [[1, 0, 1], [1, 1, 1]],
+	'V': [[1, 1, 1], [1, 0, 0], [1, 0, 0]],
+	'W': [[1, 1, 0], [0, 1, 1], [0, 0, 1]],
+	'X': [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
+	'Y': [[1, 0], [1, 1], [1, 0], [1, 0]],
+	'Z': [[1, 0, 0], [1, 1, 1], [0, 0, 1]]}
+
+	# Dictionnaire auxiliaire, clé = forme (F, I, L, etc), valeur = configurations (sous la forme d'une matrice
     all_shapes = dict()
+	
+	# Dictionnaire clé = formes, valeurs = quintuplets de cases possibles (sous la forme de tuples)
+	SHAPES = dict()
+	
+	# formes possibles
+	FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
 
-    try:
-        if N*M != 60:
-            print("invalid size")
-        # print(FORM)
-
-    except Exception as e:
-        print("exception ",e)
-
-    for shape_name, shape in shapes.items():
-        shape_matrix = compactmat_to_mat(shape[:])
+	# Génère tous les pentominos possibles (rotations, symétries)
+	# Les divers changements de types sont nécessaires car un tuple n'est pas mutable et un set n'est pas hashable
+    for shape_name, shape_matrix in shapes.items():
         shape_set = set()
         for modified_shape in get_all_shapes(shape_matrix[:]):
-            # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in modified_shape]))
-            shape_set.add(tuple(modified_shape))
+			shape_set.add(tuple(modified_shape))
         all_shapes[shape_name] = list(map(list, [map(list, line) for line in shape_set]))
 
-    # for shape_name, shape_set in all_shapes.items():
-    #     print('-'*18)
-    #     print("{} a {} alternatives.".format(shape_name, len(shape_set)))
-    #     print(shape_name, ':')
-    #     for shape_matrix in shape_set:
-    #         # print('\n'.join(['\t'.join([str(cell) for cell in row]) for row in shape_matrix]))
-    #         print_shape(mat_to_compactmat(shape_matrix[:]))
-    #         print('-'*12)
-
-    print('-'*8)
-    # print(all_shapes)
-
-    for forme in all_shapes:
-        free_shapes = all_shapes[forme]
-        l = []
+	# A partir des configurations, on génère les quintuplets possibles par translation
+    for shape in all_shapes:
+        free_shapes = all_shapes[shape]
+        translated = []
         for fs in free_shapes:
-            l += possibles(fs)
-        FORM[forme] = set(l)
+            translated += possibles(fs)
+        SHAPES[shape] = set(translated)
 
-    VAR_FORM = dict()
+	###
+	# On génère le domaines des variables de case
+	###
+		
+    CELL = dict()
     for cell in range(N*M):
-        VAR_FORM[cell] = set()
+        CELL[cell] = set()
 
 
-    for shape, quintuplets in FORM.items():
+    for shape, quintuplets in SHAPES.items():
         for quintuplet in quintuplets:
             for cell in quintuplet:
-                VAR_FORM[cell].update({shape})
-
-
-    P = constraint_program({**VAR_FORM, **FORM})
+                CELL[cell].update({shape})
+	
+	###
+	# Création du CSP
+	###
+	
+    P = constraint_program({**CELL, **SHAPES})
     P.set_arc_consistency()
 
-    '''
-    On note d le degré max, c’est-à-dire le nombre max de variables liées à une variable fixée,
-    n le nombre de variables et m la majoration de la taille des domaines des variables.
-    arc_consistency implémente AC3 qui est en complexité O(ndm^3)
-    n = 72
-    d = 60
-    m ~= 200
-    '''
+	###
+	# Ajout des contraintes
+	###
 
     for cell in range(N*M):
-        for shape, quintuplets in FORM.items():
+        for shape, quintuplets in SHAPES.items():
             setquint = set()
             for quintuplet in quintuplets:
-                if cell in quintuplet and shape in VAR_FORM[cell]:
+			
+				# Soit la cellule est dans la forme et la forme contient la cellule
+                if cell in quintuplet and shape in CELL[cell]:
                     setquint.add((shape, quintuplet))
 
-            for othershape in VAR_FORM[cell]:
+            for othershape in CELL[cell]:
                 for otherquintuplet in quintuplets:
+					
+					# Soit la cellule n'est pas dans la forme et la forme ne contient pas la cellule
                     if othershape != shape and cell not in otherquintuplet:
                         setquint.add((othershape, otherquintuplet))
+			
+			# mise a jour
             if setquint:
-                    # print(cell, shape, setquint)
                     P.add_constraint(cell, shape, setquint)
 
+	# compteur de solution
+	count = 0
+	
+	# pour n'afficher qu'une seule solution
     print_one = True
+	
     print('Solving {}x{}...'.format(M,N))
-    sys.setrecursionlimit(10000)
-    count = 0
+    
+	# On enregistre le temps d'exécution
     t = time.time()
     for sol in P.solve_all():
         count += 1
