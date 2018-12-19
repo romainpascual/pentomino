@@ -218,7 +218,7 @@ def main(argv=[]):
                                 sol[shape_top_right] = quintuplet_top_right
                                 
                                 if print_one:
-                                    print('Time for sol. n˚{} : {:.2f}'.format(count, time.time()-t))
+                                    print('Time for first solution: {:.2f}'.format(time.time()-t))
                                     print_sol(sol)
                                     print_one = False
                         
@@ -236,8 +236,8 @@ def main(argv=[]):
                 to_remove.add(quintuplet_top_left)
         SHAPES[shape_top_left].difference_update(to_remove)
 
+    print(count)
     print('Solved in a total time of: {:.2f}s'.format(time.time() - t))
-    print('Final count: {} solutions'.format(count))
 
 if __name__ == '__main__':
     main()

@@ -282,12 +282,11 @@ def main(argv=[]):
     for sol in P.solve_all():
         count += 1
         if print_one:
-            print('Time for sol. n˚{} : {:.2f}'.format(count, time.time()-t))
+            print('Time for first solution: {:.2f}'.format(time.time()-t))
             print_sol(sol)
             print_one = False
+    print(count//4)
     print('Solved in a total time of: {:.2f}s'.format(time.time() - t))
-    print('Final count: {} solutions'.format(count//4))
-
 
 if __name__ == '__main__':
     main()
