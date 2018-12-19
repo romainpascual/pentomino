@@ -256,5 +256,4 @@ if __name__ == '__main__':
         SHAPES[shape_top_left].difference_update(to_remove)
 
     print(int(count))
-    print('Solved in a total time of: {.2f}s'.format(time.time() - t))
 
