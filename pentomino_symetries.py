@@ -207,6 +207,16 @@ def main(argv=[]):
                                             P.add_constraint(cell, shape_current, setquint)
 
                             for sol in P.solve_all():
+                                # Si toute la colonne de gauche ET toute la colonne de droite sont recouvertes par
+                                # une forme unique, on sait que l'on va retrouver ces solutions symétrisées.
+                                # NB: en pratique cela ne se produit QUE pour le cas 3x20, qui est un cas avec
+                                # tellement peu de solutions que cette méthode est solution : il ne sert à rien de
+                                # modifier le solveur pour 2 solutions.
+                                left = set(range(0, N * M, N))
+                                right = set(range(N - 1, N * M, N))
+                                if left.issubset(set(quintuplet_top_left)) and right.issubset(
+                                        set(quintuplet_top_right)):
+                                    count += 0.5
                                 count += 1
                                                                                     
                                 # On rajoute à la solution les deux formes que l'on a fixé
