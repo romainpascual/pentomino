@@ -17,7 +17,8 @@ except IndexError:
 
 def init_has_printed(value):
     """
-    Cette fonction ne sert qu'a initialiser le partage de la variable commandant l'affichage dans notre multi-threading.
+    Cette fonction ne sert qu'a initialiser le partage de la variable 
+    commandant l'affichage dans notre multi-threading.
     """
     global has_printed
     has_printed = value
@@ -84,7 +85,8 @@ def get_all_shapes(shape_matrix):
 
 def solve_top_right(quintuplet_top_right):
     """
-    Cette fonction est lancée dans le main. Elle vise à retourner le nombre de solutions possibles d'une configuration
+    Cette fonction est lancée dans le main.
+    Elle vise à retourner le nombre de solutions possibles d'une configuration
     telle que la forme en haut à gauche et la forme en haut à droite est fixée.
     """
     count_local = 0  # Compteur des solutions dans cette configuration particulière
@@ -215,15 +217,19 @@ if __name__ == '__main__':
         SHAPES[shape] = set(l)
 
     for index_top_left, shape_top_left in enumerate(FREE_PENTOMINOS):
+
         # On itère sur tous les pentominos (pour fixer le coin supérieur gauche)
         quintuplets_top_left = SHAPES[shape_top_left]
         for index_top_right in range(index_top_left + 1, len(FREE_PENTOMINOS)):
+
             # On itère sur tous les pentominos restants (pour fixer le coin supérieur droit)
             shape_top_right = FREE_PENTOMINOS[index_top_right]
             quintuplets_top_right = SHAPES[shape_top_right]
             for quintuplet_top_left in quintuplets_top_left:
+
                 # On sélectionne dans cette boucle une configuration du pentomino supérieur gauche
                 if 0 in quintuplet_top_left:
+
                     # On vérifie bien sur que cette configuration peut aller dans le coin supérieur gauche
 
                     # Le test suivant sert à initialiser le multiprocessing
@@ -256,5 +262,5 @@ if __name__ == '__main__':
         SHAPES[shape_top_left].difference_update(to_remove)
 
     print(int(count))
-    print('Solved in a total time of: {.2f}s'.format(time.time() - t))
+    print('Solved in a total time of: {:.2f}s'.format(time.time() - t))
 
