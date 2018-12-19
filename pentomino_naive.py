@@ -1,4 +1,4 @@
-#!usr/bin/env pypy
+# coding: utf-8 
 
 ## Description du Problème
     
