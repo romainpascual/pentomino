@@ -1,5 +1,3 @@
-#!usr/bin/env pypy
-
 ## Description du Problème
 
 """
@@ -33,7 +31,7 @@ vous demande de calculer la solution à l’aide de notre solveur de programmati
 
 Pour cela vous devez modéliser le problème de pavage. Décrivez votre modèle précisément 
 dans un document qui accompagnera le code. Indiquez également comment vous avez éliminé 
-les solutions symmétriques.
+les solutions symétriques.
 
 """
 
@@ -43,43 +41,6 @@ les solutions symmétriques.
 import sys, time
 from constraint_programming import constraint_program
 sys.setrecursionlimit(10000)
-
-
-## Utilisation de colorama pour le rendu
-try:
-    import colorama
-    from colorama import Fore, Back, Style
-    colorama.init(autoreset=True)
-
-    COLOR = {'X': Style.RESET_ALL + Back.CYAN + Fore.BLACK + 'X',
-             'L': Style.RESET_ALL + Back.LIGHTYELLOW_EX + Fore.BLACK + 'L',
-             'V': Style.RESET_ALL + Back.LIGHTMAGENTA_EX + Fore.BLACK + 'V',
-             'I': Style.RESET_ALL + Back.MAGENTA + 'I',
-             'N': Style.RESET_ALL + Back.LIGHTBLUE_EX + 'N',
-             'P': Style.RESET_ALL + Back.LIGHTGREEN_EX + Fore.RED + 'P',
-             'T': Style.RESET_ALL + Back.RED + Fore.BLACK + 'T',
-             'U': Style.RESET_ALL + Back.WHITE + Fore.BLACK + 'U',
-             'F': Style.RESET_ALL + Back.BLUE + 'F',
-             'W': Style.RESET_ALL + Back.YELLOW + Fore.BLACK + 'W',
-             'Y': Style.RESET_ALL + Back.LIGHTCYAN_EX + Fore.BLACK + 'Y',
-             'Z': Style.RESET_ALL + 'Z',
-             ' ': Style.RESET_ALL + ' '
-             }
-
-except ModuleNotFoundError:
-    COLOR = {'X': 'X',
-             'L': 'L',
-             'V': 'V',
-             'I': 'I',
-             'N': 'N',
-             'P': 'P',
-             'T': 'T',
-             'U': 'U',
-             'F': 'F',
-             'W': 'W',
-             'Y': 'Y',
-             'Z': 'Z'
-             }
 
 ## Lecture de l'entrée
 
@@ -260,18 +221,15 @@ def main(argv=[]):
     # pour n'afficher qu'une seule solution
     print_one = True
 
-    print('Solving {}x{}...'.format(M,N))
-    
+
     # On enregistre le temps d'exécution
     t = time.time()
     for sol in P.solve_all():
         count += 1
         if print_one:
-            print('Time for sol. n˚{} : {.2f}'.format(count, time.time()-t))
             print_sol(sol)
             print_one = False
-    print('Solved in a total time of: {.2f}s'.format(time.time() - t))
-    print('Final count: {} solutions'.format(count//4))
+    print('{}'.format(count//4))
 
 
 if __name__ == '__main__':

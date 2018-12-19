@@ -1,47 +1,8 @@
-#!usr/bin/env pypy
-
 ## Imports
 
 import sys, copy, time
 from constraint_programming import constraint_program
 sys.setrecursionlimit(10000)
-
-## Utilisation de colorama pour le rendu
-try:
-    import colorama
-    from colorama import Fore, Back, Style
-    colorama.init(autoreset=True)
-
-    COLOR = {'X': Style.RESET_ALL + Back.CYAN + Fore.BLACK + 'X',
-             'L': Style.RESET_ALL + Back.LIGHTYELLOW_EX + Fore.BLACK + 'L',
-             'V': Style.RESET_ALL + Back.LIGHTMAGENTA_EX + Fore.BLACK + 'V',
-             'I': Style.RESET_ALL + Back.MAGENTA + 'I',
-             'N': Style.RESET_ALL + Back.LIGHTBLUE_EX + 'N',
-             'P': Style.RESET_ALL + Back.LIGHTGREEN_EX + Fore.RED + 'P',
-             'T': Style.RESET_ALL + Back.RED + Fore.BLACK + 'T',
-             'U': Style.RESET_ALL + Back.WHITE + Fore.BLACK + 'U',
-             'F': Style.RESET_ALL + Back.BLUE + 'F',
-             'W': Style.RESET_ALL + Back.YELLOW + Fore.BLACK + 'W',
-             'Y': Style.RESET_ALL + Back.LIGHTCYAN_EX + Fore.BLACK + 'Y',
-             'Z': Style.RESET_ALL + 'Z',
-             ' ': Style.RESET_ALL + ' '
-             }
-
-except ModuleNotFoundError:
-    COLOR = {'X': 'X',
-             'L': 'L',
-             'V': 'V',
-             'I': 'I',
-             'N': 'N',
-             'P': 'P',
-             'T': 'T',
-             'U': 'U',
-             'F': 'F',
-             'W': 'W',
-             'Y': 'Y',
-             'Z': 'Z'
-             }
-
 
 ## Lecture de l'entrée
 
@@ -242,13 +203,19 @@ if __name__ == '__main__':
                                         if setquint:
                                             P.add_constraint(cell, shape_current, setquint)
 
-                            print('Solving {} {} + {} {}...'.format(shape_top_left,
-                                                                    quintuplet_top_left,
-                                                                    shape_top_right,
-                                                                    quintuplet_top_right))
-
                             for sol in P.solve_all():
-                                count += 1
+                                # Si toute la colonne de gauche ET toute la colonne de droite sont recouvertes par
+                                # une forme unique, on sait que l'on va retrouver ces solutions symétrisées.
+                                # NB: en pratique cela ne se produit QUE pour le cas 3x20, qui est un cas avec
+                                # tellement peu de solutions que cette méthode est solution : il ne sert à rien de
+                                # modifier le solveur pour 2 solutions.
+                                left = set(range(0, N * M, N))
+                                right = set(range(N - 1, N * M, N))
+                                if left.issubset(set(quintuplet_top_left)) and right.issubset(
+                                        set(quintuplet_top_right)):
+                                    count += 0.5
+                                else:
+                                    count += 1
 
                                 # On rajoute à la solution les deux formes que l'on a fixé
                                 for i in quintuplet_top_left:
@@ -259,11 +226,9 @@ if __name__ == '__main__':
                                 sol[shape_top_right] = quintuplet_top_right
 
                                 if print_one:
-                                    print('Time for sol. n˚{} : {:.2f}'.format(count, time.time()-t))
                                     print_sol(sol)
                                     print_one = False
-                        
-                            
+
                             del P
 
         ###
@@ -277,6 +242,5 @@ if __name__ == '__main__':
                 to_remove.add(quintuplet_top_left)
         SHAPES[shape_top_left].difference_update(to_remove)
 
-    print('Solved in a total time of: {:.2f}s'.format(time.time() - t))
-    print('Final count: {} solutions'.format(count))
+    print('{}'.format(int(count)))
 
