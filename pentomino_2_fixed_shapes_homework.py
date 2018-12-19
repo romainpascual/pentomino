@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
     corners = {0, N - 1, (M - 1) * N, N * M - 1}  # Ensemble des coins
 
-    FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
+    FREE_PENTOMINOS = ["U", "V", "X", "Z", "N", "P", "T", "W", "F", "Y", "L", "I"]
 
     for shape_name, shape_matrix in shapes.items():
         shape_set = set()
