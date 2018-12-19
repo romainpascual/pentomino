@@ -1,7 +1,7 @@
 #!usr/bin/env pypy
 
 ## Description du Problème
-	
+
 """
 En gros vous disposez de 12 formes appelés pentominos, composées chacune de 5 cases unitaires,
 que vous devez placer sur une grille composée de 60 cases. Les formes ne doivent pas se superposer,
@@ -44,9 +44,7 @@ import sys, time
 from constraint_programming import constraint_program
 sys.setrecursionlimit(10000)
 
-
 ## Utilisation de colorama pour le rendu
-
 try:
     import colorama
     from colorama import Fore, Back, Style
@@ -63,7 +61,8 @@ try:
              'F': Style.RESET_ALL + Back.BLUE + 'F',
              'W': Style.RESET_ALL + Back.YELLOW + Fore.BLACK + 'W',
              'Y': Style.RESET_ALL + Back.LIGHTCYAN_EX + Fore.BLACK + 'Y',
-             'Z': Style.RESET_ALL + 'Z'
+             'Z': Style.RESET_ALL + 'Z',
+             ' ': Style.RESET_ALL + ' '
              }
 
 except ModuleNotFoundError:
@@ -81,57 +80,6 @@ except ModuleNotFoundError:
              'Z': 'Z'
              }
 
-
-## Dessin des différentes formes
-
-"""
-    
-    F:   ##     12
-        ##      2
-         #      11
-
-    I:  #####   5
-    
-    L:  ####    4
-        #       1
-
-    N:  ###     3
-          ##    22
-
-    P:  ###     3
-         ##     12
-
-    T:  #       1
-        ###     3
-        #       1
-
-    U:  # #     111
-        ###     3
-
-    V:  ###     3
-        #       1
-        #       1
-
-    W:  ##      2
-         ##     12
-          #     21
-
-    X:   #      11
-        ###     3
-         #      11
-         
-    Y:  #       1
-        ##      2
-        #       1
-        #       1
-         
-    Z:  #       1
-        ###     3
-          #     21
-		  
-"""
-
-
 ## Lecture de l'entrée
 
 # Cette lecture est nécéssaire en dehors du main parce que les variables sont utilisées
@@ -139,9 +87,9 @@ except ModuleNotFoundError:
 
 try:
     [M, N] = [int(x) for x in sys.argv[1].split("x")]
-	if N*M != 60:
+    if N*M != 60:
             print("Invalid Size")
-			sys.exit(1)
+            sys.exit(1)
 except IndexError:
     print("Invalid args.")
     sys.exit(1)
@@ -154,15 +102,15 @@ def print_sol(sol):
     Cette fonction permet d'afficher une solution dans la forme demandée.
     """
     table_sol = [[None for _ in range(N)] for __ in range(M)]
-	for cell in sol:
-		if type(cell) is int:
-			table_sol[cell//N][cell%N] = sol[cell]
-	for line in table_sol:
-		print(''.join(line))
+    for cell in sol:
+        if type(cell) is int:
+            table_sol[cell//N][cell%N] = sol[cell]
+    for line in table_sol:
+        print(''.join(line))
 
 
 ## Fonction pour la génération des variables et des contraintes.
-		
+
 def cell(i, j):
     """
     Renvoie la variable correspondant à la case i, j dans le tableau.
@@ -199,11 +147,11 @@ def get_all_shapes(shape_matrix):
     Cette fonction prend les formes et retourne les rotations et les symétries
     """
     # Il suffit de construire le symétrique puis de faire tourner les deux possibilités
-	
-	# Symétrie de l'axe Y
+
+    # Symétrie de l'axe Y
     symmetric_matrix = shape_matrix[::-1] 
-	
-	# Rotation de la matrice
+
+    # Rotation de la matrice
     for _ in range(4):
         shape_matrix = list(zip(*shape_matrix[::-1]))
         symmetric_matrix = list(zip(*symmetric_matrix[::-1]))
@@ -213,46 +161,46 @@ def get_all_shapes(shape_matrix):
 
 ## Main fonction pour résoudre le problème du pavage par pentomino
 def main(argv=[]):
-	"""
+    """
     Fonction principale : créer le CSP, ses variables, ses contraintes et le résout à l'aide du solveur dédié
     """
 
-	###
-	# On génère le domaines des variables de forme
-	###
-	
-	shapes = {
-	'F': [[0, 1, 1], [1, 1, 0], [0, 1, 0]],
-	'I': [[1, 1, 1, 1, 1]],
-	'L': [[1, 1, 1, 1], [1, 0, 0, 0]],
-	'N': [[1, 1, 1, 0], [0, 0, 1, 1]],
-	'P': [[1, 1, 1], [0, 1, 1]],
-	'T': [[1, 0, 0], [1, 1, 1], [1, 0, 0]],
-	'U': [[1, 0, 1], [1, 1, 1]],
-	'V': [[1, 1, 1], [1, 0, 0], [1, 0, 0]],
-	'W': [[1, 1, 0], [0, 1, 1], [0, 0, 1]],
-	'X': [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
-	'Y': [[1, 0], [1, 1], [1, 0], [1, 0]],
-	'Z': [[1, 0, 0], [1, 1, 1], [0, 0, 1]]}
+    ###
+    # On génère le domaines des variables de forme
+    ###
 
-	# Dictionnaire auxiliaire, clé = forme (F, I, L, etc), valeur = configurations (sous la forme d'une matrice
+    shapes = {
+    'F': [[0, 1, 1], [1, 1, 0], [0, 1, 0]],
+    'I': [[1, 1, 1, 1, 1]],
+    'L': [[1, 1, 1, 1], [1, 0, 0, 0]],
+    'N': [[1, 1, 1, 0], [0, 0, 1, 1]],
+    'P': [[1, 1, 1], [0, 1, 1]],
+    'T': [[1, 0, 0], [1, 1, 1], [1, 0, 0]],
+    'U': [[1, 0, 1], [1, 1, 1]],
+    'V': [[1, 1, 1], [1, 0, 0], [1, 0, 0]],
+    'W': [[1, 1, 0], [0, 1, 1], [0, 0, 1]],
+    'X': [[0, 1, 0], [1, 1, 1], [0, 1, 0]],
+    'Y': [[1, 0], [1, 1], [1, 0], [1, 0]],
+    'Z': [[1, 0, 0], [1, 1, 1], [0, 0, 1]]}
+
+    # Dictionnaire auxiliaire, clé = forme (F, I, L, etc), valeur = configurations (sous la forme d'une matrice
     all_shapes = dict()
-	
-	# Dictionnaire clé = formes, valeurs = quintuplets de cases possibles (sous la forme de tuples)
-	SHAPES = dict()
-	
-	# formes possibles
-	FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
 
-	# Génère tous les pentominos possibles (rotations, symétries)
-	# Les divers changements de types sont nécessaires car un tuple n'est pas mutable et un set n'est pas hashable
+    # Dictionnaire clé = formes, valeurs = quintuplets de cases possibles (sous la forme de tuples)
+    SHAPES = dict()
+
+    # formes possibles
+    FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
+
+    # Génère tous les pentominos possibles (rotations, symétries)
+    # Les divers changements de types sont nécessaires car un tuple n'est pas mutable et un set n'est pas hashable
     for shape_name, shape_matrix in shapes.items():
         shape_set = set()
         for modified_shape in get_all_shapes(shape_matrix[:]):
-			shape_set.add(tuple(modified_shape))
+            shape_set.add(tuple(modified_shape))
         all_shapes[shape_name] = list(map(list, [map(list, line) for line in shape_set]))
 
-	# A partir des configurations, on génère les quintuplets possibles par translation
+    # A partir des configurations, on génère les quintuplets possibles par translation
     for shape in all_shapes:
         free_shapes = all_shapes[shape]
         translated = []
@@ -260,10 +208,10 @@ def main(argv=[]):
             translated += possibles(fs)
         SHAPES[shape] = set(translated)
 
-	###
-	# On génère le domaines des variables de case
-	###
-		
+    ###
+    # On génère le domaines des variables de case
+    ###
+
     CELL = dict()
     for cell in range(N*M):
         CELL[cell] = set()
@@ -273,47 +221,47 @@ def main(argv=[]):
         for quintuplet in quintuplets:
             for cell in quintuplet:
                 CELL[cell].update({shape})
-	
-	###
-	# Création du CSP
-	###
-	
+
+    ###
+    # Création du CSP
+    ###
+
     P = constraint_program({**CELL, **SHAPES})
     P.set_arc_consistency()
 
-	###
-	# Ajout des contraintes
-	###
+    ###
+    # Ajout des contraintes
+    ###
 
     for cell in range(N*M):
         for shape, quintuplets in SHAPES.items():
             setquint = set()
             for quintuplet in quintuplets:
-			
-				# Soit la cellule est dans la forme et la forme contient la cellule
+
+                # Soit la cellule est dans la forme et la forme contient la cellule
                 if cell in quintuplet and shape in CELL[cell]:
                     setquint.add((shape, quintuplet))
 
             for othershape in CELL[cell]:
                 for otherquintuplet in quintuplets:
-					
-					# Soit la cellule n'est pas dans la forme et la forme ne contient pas la cellule
+
+                    # Soit la cellule n'est pas dans la forme et la forme ne contient pas la cellule
                     if othershape != shape and cell not in otherquintuplet:
                         setquint.add((othershape, otherquintuplet))
-			
-			# mise a jour
+
+            # mise a jour
             if setquint:
                     P.add_constraint(cell, shape, setquint)
 
-	# compteur de solution
-	count = 0
-	
-	# pour n'afficher qu'une seule solution
+    # compteur de solution
+    count = 0
+
+    # pour n'afficher qu'une seule solution
     print_one = True
-	
+
     print('Solving {}x{}...'.format(M,N))
     
-	# On enregistre le temps d'exécution
+    # On enregistre le temps d'exécution
     t = time.time()
     for sol in P.solve_all():
         count += 1
