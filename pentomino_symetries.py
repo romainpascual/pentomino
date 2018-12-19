@@ -148,8 +148,8 @@ def main(argv=[]):
 
     all_shapes = dict()
     SHAPES = dict()
-    
-    FREE_PENTOMINOS = ["F","I","L","N","P","T","U","V","W","X","Y","Z"]
+
+    FREE_PENTOMINOS = ["U", "V", "X", "Z", "N", "P", "T", "W", "F", "Y", "L", "I"]
 
     for shape_name, shape_matrix in shapes.items():
         shape_set = set()
