@@ -6,43 +6,6 @@ import sys, copy, time
 from constraint_programming import constraint_program
 sys.setrecursionlimit(10000)
 
-## Utilisation de colorama pour le rendu
-try:
-    import colorama
-    from colorama import Fore, Back, Style
-    colorama.init(autoreset=True)
-
-    COLOR = {'X': Style.RESET_ALL + Back.CYAN + Fore.BLACK + 'X',
-             'L': Style.RESET_ALL + Back.LIGHTYELLOW_EX + Fore.BLACK + 'L',
-             'V': Style.RESET_ALL + Back.LIGHTMAGENTA_EX + Fore.BLACK + 'V',
-             'I': Style.RESET_ALL + Back.MAGENTA + 'I',
-             'N': Style.RESET_ALL + Back.LIGHTBLUE_EX + 'N',
-             'P': Style.RESET_ALL + Back.LIGHTGREEN_EX + Fore.RED + 'P',
-             'T': Style.RESET_ALL + Back.RED + Fore.BLACK + 'T',
-             'U': Style.RESET_ALL + Back.WHITE + Fore.BLACK + 'U',
-             'F': Style.RESET_ALL + Back.BLUE + 'F',
-             'W': Style.RESET_ALL + Back.YELLOW + Fore.BLACK + 'W',
-             'Y': Style.RESET_ALL + Back.LIGHTCYAN_EX + Fore.BLACK + 'Y',
-             'Z': Style.RESET_ALL + 'Z',
-             ' ': Style.RESET_ALL + ' '
-             }
-
-except ModuleNotFoundError:
-    COLOR = {'X': 'X',
-             'L': 'L',
-             'V': 'V',
-             'I': 'I',
-             'N': 'N',
-             'P': 'P',
-             'T': 'T',
-             'U': 'U',
-             'F': 'F',
-             'W': 'W',
-             'Y': 'Y',
-             'Z': 'Z'
-             }
-
-
 ## Lecture de l'entrée
 
 # Cette lecture est nécéssaire en dehors du main parce que les variables sont utilisées
